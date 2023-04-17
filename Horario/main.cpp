@@ -8,6 +8,8 @@ bool existemateria(char [100],int *);
 int charaint(char [5]);
 bool horariovalido(char , int , int);
 char* intachar(int);
+int contarmaterias();
+bool existecodigo(char [100]);
 
 using namespace std;
 
@@ -25,60 +27,90 @@ int main()
 bool primerbase()
 {
     ofstream arch;
-    arch.open("basedatosuno.txt");
+    arch.open("basedatosuno.txt",ios::trunc);
+    arch.close();
     char datos[100];
     char c;
-    bool ban=true;
+    bool ban=true, existe;
     int horas=0,acumh=0,creditos=0, he=0;
     while(ban){
         cout<<"Ingrese el codigo de la materia: ";
         cin>>datos;
-        arch<<datos;
-        arch<<':';
-        cout<<"Ingrese el nombre de la materia: ";
-        cin>>datos;
-        arch<<datos;
-        arch<<',';
-        cout<<"Ingrese las horas asistidas por docente: ";
-        cin>>horas;
-        while(horas<0 || horas>83){
-            cout<<"Ingrese una hora valida: ";
+        existe=existecodigo(datos);
+        if(existe){
+            ofstream arch2;
+            arch2.open("basedatosuno.txt",ios::app);
+            arch2<<datos;
+            arch2<<':';
+            cout<<"Ingrese el nombre de la materia: ";
+            cin>>datos;
+            arch2<<datos;
+            arch2<<',';
+            cout<<"Ingrese las horas asistidas por docente: ";
             cin>>horas;
-        }
-        arch<<horas;
-        arch<<',';
-        acumh+=horas;
-        cout<<"Ingrese la cantidad de creditos: ";
-        cin>>creditos;
-        he=calcularhe(creditos,horas);
-        while(he<=0){
-            cout<<"Ingrese una cantidad de creditos validos: ";
+            while(horas<0 || horas>83){
+                cout<<"Ingrese una hora valida: ";
+                cin>>horas;
+            }
+            arch2<<horas;
+            arch2<<',';
+            acumh+=horas;
+            cout<<"Ingrese la cantidad de creditos: ";
             cin>>creditos;
             he=calcularhe(creditos,horas);
-        }
-        acumh+=he;
-        arch<<he;
-        arch<<',';
-        arch<<creditos;
-        if (acumh>83){
-            cout<<"El horario es muy pesado, cancele materias"<<endl;
-            return false;
-        }
-        cout<<"Desea ingresar mas materias S para si y N para no: ";
-        cin>>c;
-        while(c!='s' && c!='S' && c!='N' && c!='n'){
-            cout<<"Ingrese un movimiento valido: ";
+            while(he<=0){
+                cout<<"Ingrese una cantidad de creditos validos: ";
+                cin>>creditos;
+                he=calcularhe(creditos,horas);
+            }
+            acumh+=he;
+            arch2<<he;
+            arch2<<',';
+            arch2<<creditos;
+            if (acumh>83){
+                cout<<"El horario es muy pesado, cancele materias"<<endl;
+                return false;
+            }
+            cout<<"Desea ingresar mas materias S para si y N para no: ";
             cin>>c;
+            while(c!='s' && c!='S' && c!='N' && c!='n'){
+                cout<<"Ingrese un movimiento valido: ";
+                cin>>c;
+            }
+            if(c=='N' || c=='n'){
+                ban=false;
+            }
+            arch2<<'\n';
+            arch2.close();
         }
-        if(c=='N' || c=='n'){
-            ban=false;
+        else{
+            cout<<"La materia ya fue ingresada"<<endl;
         }
-        arch<<'\n';
     }
-    arch.close();
     return true;
 
 }
+bool existecodigo(char array[100])
+{
+    ifstream arch;
+    char datos[200];
+    int cont=0;
+    arch.open("basedatosuno.txt");
+    while(arch.good()){
+        arch.getline(datos,200);
+        cont=0;
+        while(datos[cont]==array[cont]){
+            cont+=1;
+        }
+        if(datos[cont]==':'){
+            arch.close();
+            return false;
+        }
+    }
+    arch.close();
+    return true;
+}
+
 
 int calcularhe(int a, int hd)
 {
@@ -93,10 +125,12 @@ void horariosdeclase()
 {
     bool ban=true;
     char array[254];
-    char dia='\0';
+    char dia='\0', N='\0';
     int horas=0, acumh=0, HI=0,HF=0;
     cout<<"Para ingresar dias cuando se solicite ingrese la inicial para miercoles sera w"<<endl;
     cout<<"Los horas estan en formato de 24 horas"<<endl;
+    int materias=0, contm=0;
+    materias=contarmaterias();
     while(ban){
         cout<<"Ingrese el codigo de la materia para asignar horarios: ";
         cin>>array;
@@ -104,6 +138,7 @@ void horariosdeclase()
         if (existe){
             cout<<"Materia encontrada"<<endl;
             acumh=0;
+            contm+=1;
             while(acumh!=horas){
                 cout<<"Tiene "<<horas-acumh<<" horas por ingresar"<<endl;
                 cout<<"Ingrese el dia: ";
@@ -161,9 +196,22 @@ void horariosdeclase()
         else{
             cout<<"Materia no encontrada"<<endl;
         }
-
-
-
+        if (contm==materias){
+            cout<<"Totalidad de horarios de materias ingresados exitosamente"<<endl;
+            ban=false;
+        }
+        else{
+            cout<<"Desea ingresar más horarios para materias s para si, n para no: ";
+            cin>>N;
+            while(N!='s' && N!='S' && N!='N' && N!='n'){
+                cout<<"Ingrese un movimiento valido: ";
+                cin>>N;
+            }
+            if(N=='N' || N=='n'){
+                cout<<"Horarios ingresados exitosamente"<<endl;
+                ban=false;
+            }
+        }
     }
 }
 
@@ -342,4 +390,19 @@ char* intachar(int N)
         array[1]='\0';
         return array;
     }
+}
+
+int contarmaterias(){
+    ifstream arch;
+    int N=0;
+    char array[150];
+    arch.open("basedatosuno.txt");
+    while(arch.good()){
+        arch.getline(array,150);
+        if (array[0]!='\0'){
+            N+=1;
+        }
+    }
+    arch.close();
+    return N;
 }
