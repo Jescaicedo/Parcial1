@@ -1,0 +1,2 @@
+6666:informatica,7,5,4
+4444:calculo,4,5,3
