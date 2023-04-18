@@ -1,2 +1,2 @@
-6666:informatica,7,5,4
-4444:calculo,4,5,3
+6666:info,7,5,4
+calculo:calculo,4,5,3

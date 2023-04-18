@@ -10,6 +10,8 @@ bool horariovalido(char , int , int);
 char* intachar(int);
 int contarmaterias();
 bool existecodigo(char [100]);
+void generarmatriz();
+int valordia(char);
 
 using namespace std;
 
@@ -20,7 +22,7 @@ int main()
     if (mov){
         cout<<"Materias guardadas exitosamente"<<endl;
         horariosdeclase();
-
+        generarmatriz();
     }
 }
 
@@ -405,4 +407,93 @@ int contarmaterias(){
     }
     arch.close();
     return N;
+}
+
+void generarmatriz()
+{
+    char*** matriz = new char**[5];
+    for (int i = 0; i < 5; i++) {
+        matriz[i] = new char*[18];
+        for (int j = 0; j < 18; j++) {
+            matriz[i][j] = new char[20];
+        }
+    }
+    ifstream arch;
+    char array[200];
+    int cont=0, dia=0, contaux=0, HI=0,HF=0;
+    char d='\0';
+    char numeros[5];
+    arch.open("basedatosdos.txt");
+    while(arch.good()){
+        char codi[20];
+        arch.getline(array,200);
+        cont=0;
+        while(array[cont]!='='){
+            codi[cont]=array[cont];
+            cont+=1;
+        }
+        codi[cont]='\0';
+        cont+=1;
+        d=array[cont];
+        dia=valordia(d);
+        cont+=2;
+        contaux=0;
+        numeros[1]='\0';
+        while(array[cont]!='-' && array[cont]!='_'){
+            numeros[contaux]=array[cont];
+            cont+=1;
+            contaux+=1;
+        }
+        HI=charaint(numeros);
+        contaux=0;
+        while(array[cont]!='_'){
+            cont+=1;
+        }
+        numeros[1]='\0';
+        cont+=1;
+        while(array[cont]!='\0'){
+            numeros[contaux]=array[cont];
+            cont+=1;
+            contaux+=1;
+        }
+        HF=charaint(numeros);
+        HF-=7;
+        HI-=6;
+        while(HI<=HF){
+            for(int i=0;codi[i]!='\0';i++){
+                matriz[dia][HI][i]=codi[i];
+            }
+            HI+=1;
+        }
+
+
+
+    }
+    arch.close();
+    for (int i = 0; i < 5; i++) {
+        for (int j = 0; j < 18; j++) {
+            delete[] matriz[i][j];
+        }
+        delete[] matriz[i];
+    }
+    delete[] matriz;
+}
+
+int valordia(char d)
+{
+    if(d=='L'){
+        return 0;
+    }
+    else if(d=='M'){
+        return 1;
+    }
+    else if(d=='W'){
+        return 2;
+    }
+    else if(d=='J'){
+        return 3;
+    }
+    else if(d=='V'){
+        return 4;
+    }
 }
