@@ -1,96 +1,121 @@
 #include <iostream>
 #include <fstream>
 #include <sstream>
-bool primerbase();
+void primerbase();
+bool existecodigo(char [100]);
 int calcularhe(int , int );
+bool tomarmaterias();
 void horariosdeclase();
-bool existemateria(char [100],int *);
+void imprimirnombre(char [100]);
+bool existemateria(char [100],int *,int *,char [254]);
 int charaint(char [5]);
 bool horariovalido(char , int , int);
 char* intachar(int);
-int contarmaterias();
-bool existecodigo(char [100]);
-void generarmatriz();
+void generarmatriz(char ***);
 int valordia(char);
 
 using namespace std;
 
 int main()
 {
+    int m=0;
+    bool ban=true,ban2=true;
     cout<<"Bienvenido al preparador de horas de estudio"<<endl;
-    bool mov=primerbase();
-    if (mov){
-        cout<<"Materias guardadas exitosamente"<<endl;
-        horariosdeclase();
-        generarmatriz();
+    while(ban){
+        cout<<"Ingrese 1 para ingresar como administrador, 2 para usuario, 3 para cerrar programa: ";
+        cin>>m;
+        while(m<1 || m>3){
+            cout<<"Ingrese un movimiento valido: ";
+            cin>>m;
+        }
+        if(m==1){
+            primerbase();
+        }
+        else if (m==2){
+            ban2=tomarmaterias();
+            if(ban2){
+                ofstream arch;
+                arch.open("basedatosdos.txt",ios::trunc);
+                arch.close();
+                horariosdeclase();
+                char*** matriz = new char**[5];
+                for (int i = 0; i < 5; i++) {
+                    matriz[i] = new char*[18];
+                    for (int j = 0; j < 18; j++) {
+                        matriz[i][j] = new char[20];
+                    }
+                }
+                generarmatriz(matriz);
+                for (int i = 0; i < 5; i++) {
+                    for (int j = 0; j < 18; j++) {
+                        delete[] matriz[i][j];
+                    }
+                    delete[] matriz[i];
+                }
+                delete[] matriz;
+            }
+        }
+        else if(m==3){
+            ban=false;
+        }
+
     }
 }
 
-bool primerbase()
+void primerbase()
 {
-    ofstream arch;
-    arch.open("basedatosuno.txt",ios::trunc);
-    arch.close();
     char datos[100];
-    char c;
     bool ban=true, existe;
-    int horas=0,acumh=0,creditos=0, he=0;
+    int horas=0, creditos=0, he=0, m=0;
     while(ban){
-        cout<<"Ingrese el codigo de la materia: ";
-        cin>>datos;
-        existe=existecodigo(datos);
-        if(existe){
-            ofstream arch2;
-            arch2.open("basedatosuno.txt",ios::app);
-            arch2<<datos;
-            arch2<<':';
-            cout<<"Ingrese el nombre de la materia: ";
+        cout<<"Ingrese 1 para agregar materia al pensum, 2 para regresar: ";
+        cin>>m;
+        while(m<1 || m>2){
+            cout<<"Ingrese un movimiento valido";
+            cin>>m;
+        }
+        if(m==1){
+            cout<<"Ingrese el codigo de la materia: ";
             cin>>datos;
-            arch2<<datos;
-            arch2<<',';
-            cout<<"Ingrese las horas asistidas por docente: ";
-            cin>>horas;
-            while(horas<0 || horas>83){
-                cout<<"Ingrese una hora valida: ";
+            existe=existecodigo(datos);
+            if(existe){
+                ofstream arch;
+                arch.open("basedatosuno.txt",ios::app);
+                arch<<datos;
+                arch<<':';
+                cout<<"Ingrese el nombre de la materia: ";
+                cin>>datos;
+                arch<<datos;
+                arch<<',';
+                cout<<"Ingrese las horas asistidas por docente: ";
                 cin>>horas;
-            }
-            arch2<<horas;
-            arch2<<',';
-            acumh+=horas;
-            cout<<"Ingrese la cantidad de creditos: ";
-            cin>>creditos;
-            he=calcularhe(creditos,horas);
-            while(he<=0){
-                cout<<"Ingrese una cantidad de creditos validos: ";
+                while(horas<0 || horas>12){
+                    cout<<"Ingrese una horas validas: ";
+                    cin>>horas;
+                }
+                arch<<horas;
+                arch<<',';
+                cout<<"Ingrese la cantidad de creditos: ";
                 cin>>creditos;
                 he=calcularhe(creditos,horas);
+                if(he<0){
+                    he=0;
+                }
+                arch<<he;
+                arch<<',';
+                arch<<creditos;
+                arch<<'\n';
+                arch.close();
             }
-            acumh+=he;
-            arch2<<he;
-            arch2<<',';
-            arch2<<creditos;
-            if (acumh>83){
-                cout<<"El horario es muy pesado, cancele materias"<<endl;
-                return false;
+
+            else{
+                cout<<"La materia ya fue ingresada"<<endl;
             }
-            cout<<"Desea ingresar mas materias S para si y N para no: ";
-            cin>>c;
-            while(c!='s' && c!='S' && c!='N' && c!='n'){
-                cout<<"Ingrese un movimiento valido: ";
-                cin>>c;
-            }
-            if(c=='N' || c=='n'){
-                ban=false;
-            }
-            arch2<<'\n';
-            arch2.close();
         }
-        else{
-            cout<<"La materia ya fue ingresada"<<endl;
+        else if(m==2){
+            ban=false;
         }
     }
-    return true;
-
 }
 bool existecodigo(char array[100])
 {
@@ -122,25 +147,139 @@ int calcularhe(int a, int hd)
     return a;
 
 }
+bool tomarmaterias()
+{
+    int acumhoras=0;
+    int he=0, hp=0;
+    char array[254], datos[254];
+    bool ban=true, mov=true;
+    ofstream arch;
+    char N='\0';
+    arch.open("clasesusuario.txt");
+    while(ban){
+        cout<<"Ingrese el codigo de la materia que desea tomar: ";
+        cin>>array;
+        bool existe=existemateria(array,&he,&hp,datos);
+        if (existe){
+            cout<<"Materia encontrada"<<endl;
+            acumhoras+=he;
+            acumhoras+=hp;
+            if(acumhoras<83){
+                arch<<datos;
+                arch<<'\n';
+                cout<<"Desea ingresar más horarios para materias s para si, n para no: ";
+                cin>>N;
+                while(N!='s' && N!='S' && N!='N' && N!='n'){
+                    cout<<"Ingrese un movimiento valido: ";
+                    cin>>N;
+                }
+                if(N=='N' || N=='n'){
+                    cout<<"Horarios ingresados exitosamente"<<endl;
+                    ban=false;
+                }
+            }
+            else{
+                cout<<"El horario ingresado es muy pesado, cancele materias e intente de nuevo"<<endl;
+                ban=false;
+                mov=false;
+            }
+
+        }
+
+    }
+    arch.close();
+    return mov;
+}
+bool existemateria(char a[254], int *p,int *h,char d[254])
+{
+    int cont=0,contin=0;
+    char numeros[5];
+    ifstream arch;
+    bool existe=true;
+    arch.open("basedatosuno.txt");
+    while(a[contin]!='\0'){
+        contin+=1;
+    }
+    while(arch.good()){
+        arch.getline(d,254);
+        while(d[cont]!=':'){
+            cont+=1;
+        }
+        if (contin==cont){
+            for(int i=0;i<cont;i++){
+                if(a[i]!=d[i]){
+                    break;
+                }
+                else if(i==cont-1){
+                    existe=true;
+                    while(d[cont]!=','){
+                        cont+=1;
+                    }
+                    cont+=1;
+                    contin=0;
+                    while(d[cont]!=','){
+                        numeros[contin]=d[cont];
+                        cont+=1;
+                        contin+=1;
+                    }
+                    *p=charaint(numeros);
+                    numeros[1]='\0';
+                    cont+=1;
+                    contin=0;
+                    while(d[cont]!=','){
+                        numeros[contin]=d[cont];
+                        cont+=1;
+                        contin+=1;
+                    }
+                    *h=charaint(numeros);
+                    arch.close();
+                    return existe;
+                }
+            }
+        }
+    }
+    arch.close();
+    existe=false;
+    return existe;
+
+}
 
 void horariosdeclase()
 {
-    bool ban=true;
-    char array[254];
-    char dia='\0', N='\0';
+    ifstream arch;
+    arch.open("clasesusuario.txt");
+    char array[254],numero[5];
+    char dia='\0';
+    int cont=0,contaux=0;
     int horas=0, acumh=0, HI=0,HF=0;
     cout<<"Para ingresar dias cuando se solicite ingrese la inicial para miercoles sera w"<<endl;
     cout<<"Los horas estan en formato de 24 horas"<<endl;
-    int materias=0, contm=0;
-    materias=contarmaterias();
-    while(ban){
-        cout<<"Ingrese el codigo de la materia para asignar horarios: ";
-        cin>>array;
-        bool existe=existemateria(array,&horas);
-        if (existe){
-            cout<<"Materia encontrada"<<endl;
-            acumh=0;
-            contm+=1;
+    while(arch.good()){
+        char *nombre=new char[100];
+        acumh=0;
+        cont=0;
+        arch.getline(array,254);
+        if(array[cont]!='\0'){
+            while(array[cont]!=':'){
+                cont+=1;
+            }
+            contaux=0;
+            cont+=1;
+            while(array[cont]!=','){
+                nombre[contaux]=array[cont];
+                cont+=1;
+                contaux+=1;
+            }
+            nombre[contaux]='\0';
+            cont+=1;
+            contaux=0;
+            while(array[cont]!=','){
+                numero[contaux]=array[cont];
+                cont+=1;
+                contaux+=1;
+            }
+            horas=charaint(numero);
+            imprimirnombre(nombre);
             while(acumh!=horas){
                 cout<<"Tiene "<<horas-acumh<<" horas por ingresar"<<endl;
                 cout<<"Ingrese el dia: ";
@@ -157,7 +296,7 @@ void horariosdeclase()
                 }
                 cout<<"Ingrese la hora final de la clase: ";
                 cin>>HF;
-                while(HF<6 || HF>20){
+                while(HF<7 || HF>20){
                     cout<<"Ingrese una hora final valida: ";
                     cin>>HF;
                 }
@@ -170,7 +309,7 @@ void horariosdeclase()
                         acumh=acumh+(HF-HI);
                         ofstream arch;
                         arch.open("basedatosdos.txt",ios::app);
-                        arch<<array;
+                        arch<<nombre;
                         arch<<'=';
                         arch<<dia;
                         arch<<':';
@@ -193,74 +332,25 @@ void horariosdeclase()
                 else{
                     cout<<"El horario ingresado supera las horas de la materia"<<endl;
                 }
+
             }
         }
         else{
-            cout<<"Materia no encontrada"<<endl;
+            cout<<"Todos los horarios de las materias han sido guardados exitosamente"<<endl;
         }
-        if (contm==materias){
-            cout<<"Totalidad de horarios de materias ingresados exitosamente"<<endl;
-            ban=false;
-        }
-        else{
-            cout<<"Desea ingresar más horarios para materias s para si, n para no: ";
-            cin>>N;
-            while(N!='s' && N!='S' && N!='N' && N!='n'){
-                cout<<"Ingrese un movimiento valido: ";
-                cin>>N;
-            }
-            if(N=='N' || N=='n'){
-                cout<<"Horarios ingresados exitosamente"<<endl;
-                ban=false;
-            }
-        }
+        delete[] nombre;
     }
 }
 
-bool existemateria(char a[254], int *p)
+void imprimirnombre(char array[100])
 {
-    int cont=0,contin=0;
-    char datos[254];
-    char numeros[5];
-    ifstream arch;
-    bool existe;
-    arch.open("basedatosuno.txt");
-    while(a[contin]!='\0'){
-        contin+=1;
+    cout<<"Vas a ingresar los horarios de ";
+    for(int i=0;array[i]!='\0';i++){
+       cout<<array[i];
     }
-    while(arch.good()){
-        arch.getline(datos,254);
-        while(datos[cont]!=':'){
-            cont+=1;
-        }
-        if (contin==cont){
-            for(int i=0;i<cont;i++){
-                if(a[i]!=datos[i]){
-                    break;
-                }
-                else if(i==cont-1){
-                    existe=true;
-                    while(datos[cont]!=','){
-                        cont+=1;
-                    }
-                    cont+=1;
-                    contin=0;
-                    while(datos[cont]!=','){
-                        numeros[contin]=datos[cont];
-                        cont+=1;
-                        contin+=1;
-                    }
-                    *p=charaint(numeros);
-                    return existe;
-                }
-            }
-        }
-    }
-    arch.close();
-    existe=false;
-    return existe;
-
+    cout<<endl;
 }
+
 
 int charaint(char array[5])
 {
@@ -394,30 +484,8 @@ char* intachar(int N)
     }
 }
 
-int contarmaterias(){
-    ifstream arch;
-    int N=0;
-    char array[150];
-    arch.open("basedatosuno.txt");
-    while(arch.good()){
-        arch.getline(array,150);
-        if (array[0]!='\0'){
-            N+=1;
-        }
-    }
-    arch.close();
-    return N;
-}
-
-void generarmatriz()
+void generarmatriz(char ***matriz)
 {
-    char*** matriz = new char**[5];
-    for (int i = 0; i < 5; i++) {
-        matriz[i] = new char*[18];
-        for (int j = 0; j < 18; j++) {
-            matriz[i][j] = new char[20];
-        }
-    }
     ifstream arch;
     char array[200];
     int cont=0, dia=0, contaux=0, HI=0,HF=0;
@@ -470,13 +538,6 @@ void generarmatriz()
 
     }
     arch.close();
-    for (int i = 0; i < 5; i++) {
-        for (int j = 0; j < 18; j++) {
-            delete[] matriz[i][j];
-        }
-        delete[] matriz[i];
-    }
-    delete[] matriz;
 }
 
 int valordia(char d)
