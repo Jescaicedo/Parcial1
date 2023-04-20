@@ -15,6 +15,7 @@ void generarmatriz(char ***);
 int valordia(char);
 void imprimirmatriz(char***);
 void imprimirdia(int);
+void horasdeestudio(char***);
 
 using namespace std;
 
@@ -55,6 +56,7 @@ int main()
                     }
                 }
                 generarmatriz(matriz);
+                horasdeestudio(matriz);
                 imprimirmatriz(matriz);
                 for (int i = 0; i < 5; i++) {
                     for (int j = 0; j < 16; j++) {
@@ -195,6 +197,9 @@ bool tomarmaterias()
             }
 
         }
+        else{
+            cout<<"La materia no fue encontrada en el pensum"<<endl;
+        }
 
     }
     arch.close();
@@ -262,7 +267,7 @@ void horariosdeclase()
     char dia='\0';
     int cont=0,contaux=0;
     int horas=0, acumh=0, HI=0,HF=0;
-    cout<<"Para ingresar dias cuando se solicite ingrese la inicial para miercoles sera w"<<endl;
+    cout<<"Para ingresar dias cuando se solicite ingrese la inicial del dia, para miercoles sera w"<<endl;
     cout<<"Los horas estan en formato de 24 horas"<<endl;
     while(arch.good()){
         char *nombre=new char[100];
@@ -575,6 +580,77 @@ int valordia(char d)
 
 }
 
+void horasdeestudio(char*** matriz)
+{
+    ifstream arch;
+    arch.open("clasesusuario.txt");
+    char array[254], nombre[100], numero[5];
+    int dia=0, hora=0,cont=0, contaux=0, horase=0;
+    while(arch.good() && hora<16){
+        arch.getline(array,254);
+        if(array[cont]!='\0'){
+            while(array[cont]!=':'){
+                cont+=1;
+            }
+            cont+=1;
+            while(array[cont]!=','){
+                nombre[contaux]=array[cont];
+                cont+=1;
+                contaux+=1;
+            }
+            nombre[contaux]='\0';
+            cont+=1;
+            contaux=0;
+            while(array[cont]!=','){
+                cont+=1;
+            }
+            cont+=1;
+            while(array[cont]!=','){
+                numero[contaux]=array[cont];
+                contaux+=1;
+                cont+=1;
+            }
+            numero[contaux]='\0';
+            cont=0;
+            contaux=0;
+            horase=charaint(numero);
+            numero[1]='\0';
+            while(horase>0){
+                if(horase%2==0){
+                    if(matriz[dia][hora][0]=='\0' && matriz[dia][hora+1][0]=='\0'){
+                        matriz[dia][hora][0]='#';
+                        for(int i=0;nombre[i]!='\0';i++){
+                            matriz[dia][hora][i+1]=nombre[i];
+                        }
+                        matriz[dia][hora+1][0]='-';
+                        horase-=2;
+                    }
+                }
+                else{
+                    if(matriz[dia][hora][0]=='\0'){
+                        matriz[dia][hora][0]='#';
+                        for(int i=0;nombre[i]!='\0';i++){
+                            matriz[dia][hora][i+1]=nombre[i];
+                        }
+                        horase-=1;
+                    }
+                }
+                if(dia==4){
+                    dia=0;
+                    hora+=2;
+                }
+                else{
+                    dia+=1;
+                }
+            }
+        }
+    }
+    if(hora>=16){
+        cout<<"Las horas de estudio no se pudieron asignar en su totalidad, se recomienda cancelar"<<endl;
+    }
+    arch.close();
+}
+
 void imprimirmatriz(char*** matriz)
 {
     cout<<"Tus horarios de clase y estudio son:"<<endl;
@@ -583,7 +659,7 @@ void imprimirmatriz(char*** matriz)
     while(dia<=4){
         imprimirdia(dia);
         while(hora<16){
-            if(matriz[dia][hora][0]!='\0' && matriz[dia][hora][0]!='#' && matriz[dia][hora][0]!='\r' && matriz[dia][hora][0]!='É'){
+            if(matriz[dia][hora][0]!='\0' && matriz[dia][hora][0]!='#'){
                 HI=hora;
                 HI+=6;
                 HF=HI;
@@ -602,6 +678,28 @@ void imprimirmatriz(char*** matriz)
                 HF+=1;
                 conth=0;
                 cout<<HI<<":00-"<<HF<<":00 clase de ";
+                imprimirnombre(materia);
+            }
+            else if(matriz[dia][hora][0]=='#'){
+                HI=hora;
+                HI+=6;
+                HF=HI;
+                cont+=1;
+                while(matriz[dia][hora][cont]!='\0'){
+                    materia[cont-1]=matriz[dia][hora][cont];
+                    cont+=1;
+                }
+                materia[cont-1]='\0';
+                hora+=1;
+                cont=0;
+                while(matriz[dia][hora][0]=='-'){
+                    conth+=1;
+                    hora+=1;
+                }
+                HF+=conth;
+                HF+=1;
+                conth=0;
+                cout<<HI<<":00-"<<HF<<":00 estudiar ";
                 imprimirnombre(materia);
             }
             else{

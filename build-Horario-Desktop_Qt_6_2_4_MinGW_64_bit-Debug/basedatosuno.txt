@@ -50,3 +50,10 @@
 2599492:comunicacionesinalambricas,4,5,3
 2599491:gestiondeteleco2,4,5,3
 2599401:seminarioingteleco,2,1,1
+2598021:circuitosderadiofrec,7,2,3
+2599001:Redesdecomp3,6,3,3
+2599013:fundamentosderadar,4,5,3
+2599007:funddeinteligcomputa,4,5,3
+2599002:serviciostelematicos,6,3,3
+2599003:seguridaddelainformacion,6,3,3
+2599004:funddeoptiyfotonica,4,5,3

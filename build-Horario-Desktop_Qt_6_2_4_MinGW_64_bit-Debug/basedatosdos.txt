@@ -1,9 +1,8 @@
+calculodiferencial=M:10-11_12
+calculodiferencial=J:12-13_14
 informatica2=L:12-13-14_15
 informatica2=M:8-9_10
 informatica2=J:8-9_10
-calculodiferencial=M:10-11_12
-calculodiferencial=J:10-11_12
 ingles2=W:8-9_10
 ingles2=V:8-9_10
-vivamoslau=W:7_8
-vivamoslau=V:7_8
+vivamoslau=W:17-18_19
