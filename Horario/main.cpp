@@ -13,6 +13,8 @@ bool horariovalido(char , int , int);
 char* intachar(int);
 void generarmatriz(char ***);
 int valordia(char);
+void imprimirmatriz(char***);
+void imprimirdia(int);
 
 using namespace std;
 
@@ -40,14 +42,22 @@ int main()
                 horariosdeclase();
                 char*** matriz = new char**[5];
                 for (int i = 0; i < 5; i++) {
-                    matriz[i] = new char*[18];
-                    for (int j = 0; j < 18; j++) {
-                        matriz[i][j] = new char[20];
+                    matriz[i] = new char*[16];
+                    for (int j = 0; j < 16; j++) {
+                        matriz[i][j] = new char[40];
+                    }
+                }
+                for(int i=0; i<5;i++){
+                    for(int j=0;j<16;j++){
+                        for(int z=0;z<40;z++){
+                            matriz[i][j][z]='\0';
+                        }
                     }
                 }
                 generarmatriz(matriz);
+                imprimirmatriz(matriz);
                 for (int i = 0; i < 5; i++) {
-                    for (int j = 0; j < 18; j++) {
+                    for (int j = 0; j < 16; j++) {
                         delete[] matriz[i][j];
                     }
                     delete[] matriz[i];
@@ -164,7 +174,7 @@ bool tomarmaterias()
             cout<<"Materia encontrada"<<endl;
             acumhoras+=he;
             acumhoras+=hp;
-            if(acumhoras<83){
+            if(acumhoras<=80){
                 arch<<datos;
                 arch<<'\n';
                 cout<<"Desea ingresar más horarios para materias s para si, n para no: ";
@@ -279,6 +289,7 @@ void horariosdeclase()
                 contaux+=1;
             }
             horas=charaint(numero);
+            cout<<"Vas a ingresar los horarios de ";
             imprimirnombre(nombre);
             while(acumh!=horas){
                 cout<<"Tiene "<<horas-acumh<<" horas por ingresar"<<endl;
@@ -290,13 +301,13 @@ void horariosdeclase()
                 }
                 cout<<"Ingrese la hora inicial de la clase: ";
                 cin>>HI;
-                while(HI<6 || HI>19){
+                while(HI<6 || HI>21){
                     cout<<"Ingrese una hora inicial valida: ";
                     cin>>HI;
                 }
                 cout<<"Ingrese la hora final de la clase: ";
                 cin>>HF;
-                while(HF<7 || HF>20){
+                while(HF<7 || HF>22){
                     cout<<"Ingrese una hora final valida: ";
                     cin>>HF;
                 }
@@ -344,7 +355,6 @@ void horariosdeclase()
 
 void imprimirnombre(char array[100])
 {
-    cout<<"Vas a ingresar los horarios de ";
     for(int i=0;array[i]!='\0';i++){
        cout<<array[i];
     }
@@ -474,7 +484,7 @@ char* intachar(int N)
         array[2]='\0';
         return array;
     }
-    else if(N/10==0){
+    else{
         res=N%10;
         res+=48;
         c=res;
@@ -491,51 +501,56 @@ void generarmatriz(char ***matriz)
     int cont=0, dia=0, contaux=0, HI=0,HF=0;
     char d='\0';
     char numeros[5];
+    char codi[100];
     arch.open("basedatosdos.txt");
     while(arch.good()){
-        char codi[20];
         arch.getline(array,200);
         cont=0;
-        while(array[cont]!='='){
-            codi[cont]=array[cont];
-            cont+=1;
-        }
-        codi[cont]='\0';
-        cont+=1;
-        d=array[cont];
-        dia=valordia(d);
-        cont+=2;
-        contaux=0;
-        numeros[1]='\0';
-        while(array[cont]!='-' && array[cont]!='_'){
-            numeros[contaux]=array[cont];
-            cont+=1;
-            contaux+=1;
-        }
-        HI=charaint(numeros);
-        contaux=0;
-        while(array[cont]!='_'){
-            cont+=1;
-        }
-        numeros[1]='\0';
-        cont+=1;
-        while(array[cont]!='\0'){
-            numeros[contaux]=array[cont];
-            cont+=1;
-            contaux+=1;
-        }
-        HF=charaint(numeros);
-        HF-=7;
-        HI-=6;
-        while(HI<=HF){
-            for(int i=0;codi[i]!='\0';i++){
-                matriz[dia][HI][i]=codi[i];
+        if(array[cont]!='\0'){
+            while(array[cont]!='='){
+                codi[cont]=array[cont];
+                cont+=1;
             }
+            codi[cont]='\0';
+            cont+=1;
+            d=array[cont];
+            dia=valordia(d);
+            cont+=2;
+            contaux=0;
+            numeros[1]='\0';
+            while(array[cont]!='-' && array[cont]!='_'){
+                numeros[contaux]=array[cont];
+                cont+=1;
+                contaux+=1;
+            }
+            HI=charaint(numeros);
+            contaux=0;
+            while(array[cont]!='_'){
+                cont+=1;
+            }
+            numeros[1]='\0';
+            cont+=1;
+            while(array[cont]!='\0'){
+                numeros[contaux]=array[cont];
+                cont+=1;
+                contaux+=1;
+            }
+            HF=charaint(numeros);
+            HF-=7;
+            HI-=6;
+            cont=0;
+            while(codi[cont]!='\0'){
+                matriz[dia][HI][cont]=codi[cont];
+                cont+=1;
+            }
+            matriz[dia][HI][cont]='\0';
             HI+=1;
+            while(HI<=HF){
+                matriz[dia][HI][0]='-';
+                matriz[dia][HI][1]='\0';
+                HI+=1;
+            }
         }
-
-
-
     }
     arch.close();
 }
@@ -554,7 +569,67 @@ int valordia(char d)
     else if(d=='J'){
         return 3;
     }
-    else if(d=='V'){
+    else{
         return 4;
     }
+
+}
+
+void imprimirmatriz(char*** matriz)
+{
+    cout<<"Tus horarios de clase y estudio son:"<<endl;
+    int dia=0, hora=0, cont=0, HI=0,  conth=0, HF=0;
+    char materia[100];
+    while(dia<=4){
+        imprimirdia(dia);
+        while(hora<16){
+            if(matriz[dia][hora][0]!='\0' && matriz[dia][hora][0]!='#' && matriz[dia][hora][0]!='\r' && matriz[dia][hora][0]!='É'){
+                HI=hora;
+                HI+=6;
+                HF=HI;
+                while(matriz[dia][hora][cont]!='\0'){
+                    materia[cont]=matriz[dia][hora][cont];
+                    cont+=1;
+                }
+                materia[cont]='\0';
+                hora+=1;
+                cont=0;
+                while(matriz[dia][hora][0]=='-'){
+                    conth+=1;
+                    hora+=1;
+                }
+                HF+=conth;
+                HF+=1;
+                conth=0;
+                cout<<HI<<":00-"<<HF<<":00 clase de ";
+                imprimirnombre(materia);
+            }
+            else{
+                hora+=1;
+            }
+        }
+        dia+=1;
+        hora=0;
+    }
+
+}
+
+void imprimirdia(int dia)
+{
+    if (dia==0){
+        cout<<"Lunes:"<<endl;
+    }
+    else if(dia==1){
+        cout<<"Martes:"<<endl;
+    }
+    else if(dia==2){
+        cout<<"Miercoles:"<<endl;
+    }
+    else if(dia==3){
+        cout<<"Jueves:"<<endl;
+    }
+    else if(dia==4){
+        cout<<"Viernes:"<<endl;
+    }
+
 }
